@@ -13,10 +13,6 @@ let colorStage = 0;
 let stageInterval;
 
 
-// //Eva's values 
-// //Basic variables for layers and light particles
-// let layerCount = 0;
-// let lastHour = -1;
 
 // // Basic arrays to store coordinates, target sizes, and current sizes
 // let shapeX = [];
@@ -459,123 +455,113 @@ function canTexture(pg) {
 
 //------Eva Kim Set up --------------------------------------------------------------------------------------------------------------------
 
-// function evaKimSetup() {
-//     let currentH = hour();
-//     layerCount = currentH;
+// example specific variables
+let x = [];
+let y = [];
+let ySpeed = [];
+const numCircles = 60; // max # of seconds
+let c = []; // for colors
 
-//   // Initialize data for existing layers at startup
-//   for (let i = 1; i <= currentH; i++) {
-//     shapeX[i] = width / 2 + random(-150, 150);
-//     shapeY[i] = height / 2 + random(-100, 100);
-//     shapeTargetW[i] = random(200, 350);
-//     shapeTargetH[i] = random(120, 250);
+function setup() {
+    createCanvas(windowWidth, windowHeight, WEBGL);
+
+    // create mapper object
+    pMapper = createProjectionMapper(this);
+
+    quad0 = pMapper.createQuadMap(400,400); // width+height
+    // to do: create other surfaces
+
+    // loads calibration in the "maps" directory
+    //pMapper.load("maps/map.json");
+
+    melodySetup();
+}
+
+function draw() {
+    background(0);
+    quad0.displaySketch(melodyTexture);
+
+}
+
+function keyPressed() {
+    switch (key) {
+        case "c":
+            pMapper.toggleCalibration();
+            break;
+        case "f":
+            let fs = fullscreen();
+            fullscreen(!fs);
+            break;
+        case "l":
+            pMapper.load("maps/map.json");
+            break;
+
+        case "s":
+            pMapper.save("map.json");
+            break;
+    }
+}
+
+function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
+}
+
+/* Melody's Animation */
+
+function melodySetup() {
+ for (i = 0; i < numCircles; i++) {
+      x[i] = random(400);
+      y[i] = random(400);
+      ySpeed[i] = random(1,8);
+      
+      // for color
+      // random number generator
+      let r = random(1); 
+      if (r < 0.33) {
+        c[i] = [0,0,255]; // blue
+      } else if (r > 0.66) {
+        c[i] = [0,255,0]; // green
+      } else {
+        c[i] = [255,0,0]; // red
+      }
+      
+    }
+}
+
+function melodyTexture(pg) {
+    pg.clear();
+    pg.push();
+
+    pg.background([255,255,255]);
+    pg.noStroke();
+    pg.blendMode(EXCLUSION); 
+
+  for (i = 0; i < second(); i++) {
+    // for size
+    let s = map(second(), 0, 59, 180, 20); 
+        
+    // random colors
+    pg.fill(c[i]);
     
-//     // Start with already full size for past hours
-//     shapeCurrentW[i] = shapeTargetW[i];
-//     shapeCurrentH[i] = shapeTargetH[i];
-//   }
-// }
+    // add ySpeed to y
+    y[i] = y[i] + ySpeed[i];
+    
+    pg.ellipse(x[i], y[i], s);
+    
+    // switch directions when shape is at edge
+    if (y[i] >= 400 || y[i] <= 0) {
+      ySpeed[i] = ySpeed[i] * -1;
+    } 
+  }
 
-// function evaKimTexture(pg) {
-//     pg.noStroke();
-//     pg.rectMode(CENTER);
-
-//     let h = hour();
-//     let m = minute();
-//     let s = second(); 
-
-//     // 1. Time-based background color transitions
-//     let bgMorning = color(240, 244, 248);   // Morning: Pastel blue-white (6 AM - 12 PM)
-//     let bgAfternoon = color(245, 241, 232); // Afternoon: Warm cream sand (12pm - 6 PM)
-//     let bgNight = color(20, 25, 38);        // Night: Deep blue charcoal (6pm after)
-
-//     let currentBg;
-//     if (h < 12) {
-//         currentBg = bgMorning;
-//     } else if (h < 18) {
-//         let amt = map(h, 12, 17, 0, 1);
-//         currentBg = lerpColor(bgMorning, bgAfternoon, amt);
-//     } else {
-//         currentBg = bgNight;
-//     }
-//     pg.background(currentBg);
-
-//     // Add a new layer on the hour
-//     if (h !== lastHour && lastHour !== -1) {
-//         if (h === 0) {
-//         layerCount = 0; 
-//         } else {
-//         layerCount = layerCount + 1;
-        
-//         // Store random positions and target sizes directly in arrays
-//         shapeX[layerCount] = width / 2 + random(-150, 150);
-//         shapeY[layerCount] = height / 2 + random(-100, 100);
-//         shapeTargetW[layerCount] = random(200, 350);
-//         shapeTargetH[layerCount] = random(120, 250);
-        
-//         // Growth animation starts from size 0
-//         shapeCurrentW[layerCount] = 0;
-//         shapeCurrentH[layerCount] = 0;
-//         }
-//     }
-//     lastHour = h;
-
-//     // 2. Render Hanji paper layers
-//     for (let i = 1; i <= layerCount; i++) {
-//         // Smooth growth animation using lerp()
-//         shapeCurrentW[i] = lerp(shapeCurrentW[i], shapeTargetW[i], 0.05);
-//         shapeCurrentH[i] = lerp(shapeCurrentH[i], shapeTargetH[i], 0.05);
-
-//         // Color palettes by time of day
-//         let cBlue = color(165, 205, 225);     
-//         let cYellow = color(225, 225, 175);   
-//         let cAfternoon = color(235, 175, 130); 
-//         let cEvening = color(150, 110, 150);   
-//         let cNight = color(45, 60, 95);        
-
-//         let baseColor;
-//         if (i <= 11) {
-//         let amt = map(i, 1, 11, 0, 1);
-//         baseColor = lerpColor(cBlue, cYellow, amt);
-//         } else if (i <= 17) {
-//         let amt = map(i, 12, 17, 0, 1);
-//         baseColor = lerpColor(cAfternoon, cEvening, amt);
-//         } else {
-//         let amt = map(i, 18, 23, 0, 1);
-//         baseColor = lerpColor(cEvening, cNight, amt);
-//         }
-
-//         // Floating motion using sin()
-//         let waveY = sin(frameCount * 0.02 + i) * 5; 
-
-//         let alphaVal = 75;
-//         if (h >= 18) {
-//         alphaVal = 45;
-//         }
-
-//         pg.fill(red(baseColor), green(baseColor), blue(baseColor), alphaVal); 
-//         pg.rect(shapeX[i], shapeY[i] + waveY, shapeCurrentW[i], shapeCurrentH[i], 2); 
-//     }
-
-//     // 3. 1-second interval sparkling light particle
-//     if (s !== lastSecond) {
-//         sparkleX = width / 2 + random(-180, 180);
-//         sparkleY = height / 2 + random(-130, 130);
-//         sparkleAlpha = 220; 
-//         lastSecond = s;
-//     }
-
-//     if (sparkleAlpha > 0) {
-//         pg.fill(255, 240, 190, sparkleAlpha);
-//         pg.rect(sparkleX, sparkleY, 12, 12, 2);
-//         sparkleAlpha = sparkleAlpha - 5; 
-//     }
-
-//-------------------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------------------
+  // border for animation
+  pg.noFill();
+  pg.strokeWeight(30);
+  pg.stroke([255,255,0]);
+  pg.rect(0,0, 400);
+  
+  pg.pop();
+}
 
 function yutingSetup() {
   angleMode(DEGREES);
