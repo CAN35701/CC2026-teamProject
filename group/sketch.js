@@ -91,7 +91,7 @@ function bintouBaysmoreSetup(pg) {
 }
 
 function bintouBaysmoreTexture(pg) {
-     video = createVideo(['media/1022.mp4'],
+     video = createVideo(['media/1022.mp4']),
         quadMap = pMapper.createQuadMap(video.width, video.height);
         pMapper.load("maps/map.json");
 }
