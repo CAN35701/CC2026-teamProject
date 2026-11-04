@@ -42,7 +42,7 @@ function setup() {
     // loads calibration in the "maps" directory
     //pMapper.load("maps/map.json");
     yutingSetup();
-
+console.log("test");
 }
 
 function draw() {
